@@ -6,7 +6,7 @@ exports.up = function(knex) {
 		table.integer('article_id').references('articles.article_id');
 		table.integer('votes').defaultTo(0);
 		table.timestamps();
-		table.string('body'); // << string Vs. text ?
+		table.text('body'); // << string Vs. text ?
 	});
 };
 
