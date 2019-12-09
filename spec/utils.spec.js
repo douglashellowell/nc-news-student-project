@@ -5,7 +5,7 @@ const {
 	formatComments
 } = require('../db/utils/utils');
 
-describe('formatDates', () => {
+xdescribe('formatDates', () => {
 	it('Should return an empty array when passed an empty array', () => {
 		expect(formatDates([])).to.eql([]);
 	});
@@ -70,7 +70,7 @@ describe('formatDates', () => {
 	});
 }); // << add 'created_at does not exist' edge case
 
-describe('makeRefObj', () => {
+xdescribe('makeRefObj', () => {
 	it('Should return an empty object when passed an empty array', () => {
 		expect(makeRefObj([])).to.eql({});
 	});
@@ -130,7 +130,7 @@ describe('makeRefObj', () => {
 	});
 }); // << add 'prop1/prop2 does not exist' edge case
 
-describe('formatComments', () => {
+xdescribe('formatComments', () => {
 	it('returns an empty array when passed an empty array', () => {
 		expect(formatComments([])).to.eql([]);
 	});

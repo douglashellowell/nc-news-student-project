@@ -7,7 +7,7 @@ exports.up = function(knex) {
 		table.integer('votes').defaultTo(0);
 		table.string('topic').references('topics.slug');
 		table.string('author').references('users.username');
-		table.timestamps();
+		table.timestamp('created_at').defaultTo(knex.fn.now());
 	});
 };
 
