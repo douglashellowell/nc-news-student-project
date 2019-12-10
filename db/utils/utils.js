@@ -25,3 +25,20 @@ exports.formatComments = (comments, articleRef) => {
 		};
 	});
 };
+
+exports.applyCount = (articles, count) => {
+	return articles.map(({ ...article }, index) => {
+		return {
+			...article,
+			comment_count: Number(count[index].count)
+		};
+	});
+};
+
+exports.isLegalNumber = num => {
+	if (typeof num === 'number' && !isNaN(num) && num < 500 && num > -500) {
+		return true;
+	} else {
+		return false;
+	}
+};

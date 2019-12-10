@@ -2,10 +2,12 @@ const { expect } = require('chai');
 const {
 	formatDates,
 	makeRefObj,
-	formatComments
+	formatComments,
+	applyCount,
+	isLegalNumber
 } = require('../db/utils/utils');
 
-xdescribe('formatDates', () => {
+describe('formatDates', () => {
 	it('Should return an empty array when passed an empty array', () => {
 		expect(formatDates([])).to.eql([]);
 	});
@@ -70,7 +72,7 @@ xdescribe('formatDates', () => {
 	});
 }); // << add 'created_at does not exist' edge case
 
-xdescribe('makeRefObj', () => {
+describe('makeRefObj', () => {
 	it('Should return an empty object when passed an empty array', () => {
 		expect(makeRefObj([])).to.eql({});
 	});
@@ -126,11 +128,10 @@ xdescribe('makeRefObj', () => {
 			}
 		];
 		const actual = makeRefObj(input, 'author', 'article_id');
-		console.log(actual);
 	});
 }); // << add 'prop1/prop2 does not exist' edge case
 
-xdescribe('formatComments', () => {
+describe('formatComments', () => {
 	it('returns an empty array when passed an empty array', () => {
 		expect(formatComments([])).to.eql([]);
 	});
@@ -236,3 +237,118 @@ xdescribe('formatComments', () => {
 		]);
 	});
 }); // << ? edge cases
+
+describe('applyCount', () => {
+	it('returns an empty array when passed an empty array', () => {
+		expect(applyCount([], [[{}]])).to.eql([]);
+	});
+	it('applys count to "comment_count" *int* property on one item', () => {
+		const articles = [
+			{
+				article_id: 1,
+				title: 'Dougs favourite foods',
+				body: 'yummy things',
+				votes: 0,
+				topic: 'food',
+				author: 'doug',
+				created_at: '1974-11-26T12:21:54.171Z'
+			}
+		];
+		const count = [{ count: '44' }];
+		const actual = applyCount(articles, count);
+		const expected = [
+			{
+				article_id: 1,
+				title: 'Dougs favourite foods',
+				body: 'yummy things',
+				votes: 0,
+				topic: 'food',
+				author: 'doug',
+				created_at: '1974-11-26T12:21:54.171Z',
+				comment_count: 44
+			}
+		];
+		expect(actual).to.eql(expected);
+	});
+	it('applys count to several items', () => {
+		const articles = [
+			{
+				article_id: 1,
+				title: 'Dougs favourite foods',
+				body: 'yummy things'
+			},
+			{
+				article_id: 2,
+				title: 'Dougs favourite animals',
+				body: 'fluffy things'
+			},
+			{
+				article_id: 3,
+				title: 'Dougs favourite places',
+				body: 'sunny things'
+			},
+			{
+				article_id: 4,
+				title: 'Dougs favourite games',
+				body: 'funny things'
+			}
+		];
+		const count = [
+			{ count: '44' },
+			{ count: '31' },
+			{ count: '14' },
+			{ count: '69' }
+		];
+		const actual = applyCount(articles, count);
+		const expected = [
+			{
+				article_id: 1,
+				title: 'Dougs favourite foods',
+				body: 'yummy things',
+				comment_count: 44
+			},
+			{
+				article_id: 2,
+				title: 'Dougs favourite animals',
+				body: 'fluffy things',
+				comment_count: 31
+			},
+			{
+				article_id: 3,
+				title: 'Dougs favourite places',
+				body: 'sunny things',
+				comment_count: 14
+			},
+			{
+				article_id: 4,
+				title: 'Dougs favourite games',
+				body: 'funny things',
+				comment_count: 69
+			}
+		];
+		expect(actual).to.eql(expected);
+	});
+});
+
+describe('isLegalNumber', () => {
+	it('returns true for a whole number below bigInt', () => {
+		expect(isLegalNumber(10)).to.be.true;
+		expect(isLegalNumber(0)).to.be.true;
+		expect(isLegalNumber(99999)).to.be.true;
+		expect(isLegalNumber(-9876543)).to.be.true;
+		expect(isLegalNumber(-0)).to.be.true;
+		expect(isLegalNumber(134124)).to.be.true;
+		expect(isLegalNumber(1220)).to.be.true;
+		expect(isLegalNumber(11240)).to.be.true;
+	});
+	it('returns false for NaN', () => {
+		expect(isLegalNumber(NaN)).to.be.false;
+	});
+	it('returns false for other types', () => {
+		expect(isLegalNumber('numbers')).to.be.false;
+		expect(isLegalNumber(null)).to.be.false;
+		expect(isLegalNumber()).to.be.false;
+		expect(isLegalNumber([123])).to.be.false;
+		expect(isLegalNumber({ numbers: 123 })).to.be.false;
+	});
+});

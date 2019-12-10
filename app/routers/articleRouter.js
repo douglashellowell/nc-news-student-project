@@ -3,8 +3,8 @@ const { badMethod } = require('../error-middleware/express-errors.js');
 
 const {
 	getAllArticles,
-	getComment,
-	postComment,
+	// getComment,
+	// postComment,
 	getArticleById,
 	patchArticleById
 } = require('../controllers/article-c.js');
@@ -18,8 +18,8 @@ articleRouter
 // Comments Route
 articleRouter
 	.route('/:article_id/comments')
-	.get(getComment)
-	.post(postComment)
+	// .get(getComment)
+	// .post(postComment)
 	.all(badMethod);
 
 // Article Route

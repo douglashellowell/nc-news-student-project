@@ -1,5 +1,6 @@
 exports.up = function(knex) {
-	console.log('creating comments table    .... 🎄');
+	console.log('created all tables 	.... 🎄');
+	// console.log('creating comments table    .... 🎄');
 	return knex.schema.createTable('comments', table => {
 		table.increments('comment_id').primary();
 		table.string('author').references('users.username');
@@ -11,6 +12,18 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-	console.log('dropping comments table    . 💣');
+	// console.log(
+	// 	'\n',
+	// 	'\x1b[7m',
+	// 	`NODE_ENV = ${
+	// 		process.env.NODE_ENV === 'test'
+	// 			? 'test, using test DB'
+	// 			: 'undefined, using development DB'
+	// 	}`,
+	// 	'\x1b[0m',
+	// 	'\n\n'
+	// );
+
+	// console.log('dropping comments table    . 💣');
 	return knex.schema.dropTable('comments');
 };
