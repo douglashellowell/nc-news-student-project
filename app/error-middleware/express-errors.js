@@ -1,5 +1,5 @@
 exports.badMethod = (req, res, next) => {
 	res
-		.status(400)
+		.status(405)
 		.send({ msg: 'BAD METHOD: Method not allowed on this endpoint' });
 };

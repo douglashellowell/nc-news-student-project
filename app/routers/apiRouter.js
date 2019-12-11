@@ -3,6 +3,7 @@ const { userRouter } = require('./userRouter.js');
 const { articleRouter } = require('./articleRouter.js');
 const { badMethod } = require('../error-middleware/express-errors');
 const { topicRouter } = require('./topicRouter.js');
+const { commentRouter } = require('./commentRouter.js');
 
 apiRouter
 	.route('/')
@@ -15,5 +16,6 @@ apiRouter
 apiRouter.use('/topics', topicRouter);
 apiRouter.use('/users', userRouter);
 apiRouter.use('/articles', articleRouter);
+apiRouter.use('/comments', commentRouter);
 
 module.exports = { apiRouter };

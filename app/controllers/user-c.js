@@ -1,7 +1,6 @@
 const { selectUserById } = require('../models/user-m.js');
 
 exports.getUserById = (req, res, next) => {
-	// console.log('Reached getUserById controller');
 	const { username } = req.params;
 	selectUserById(username)
 		.then(user => {

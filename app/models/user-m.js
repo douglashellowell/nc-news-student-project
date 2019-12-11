@@ -1,7 +1,6 @@
 const connection = require('../../db/connection');
 
 const selectUserById = username => {
-	// console.log(' in selectUserById model!');
 	return connection
 		.select('*')
 		.from('users')

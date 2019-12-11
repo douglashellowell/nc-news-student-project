@@ -2,8 +2,10 @@ const topicRouter = require('express').Router();
 const { getAllTopics } = require('../controllers/topic-c.js');
 const { badMethod } = require('../error-middleware/express-errors');
 
-topicRouter.get('/', getAllTopics);
-topicRouter.all('/*', badMethod);
+topicRouter
+	.route('/')
+	.get(getAllTopics)
+	.all(badMethod);
 
 module.exports = { topicRouter };
 
