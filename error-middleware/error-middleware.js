@@ -5,7 +5,6 @@ exports.badMethod = (req, res, next) => {
 };
 
 exports.psqlErrorHandling = (err, req, res, next) => {
-	console.log('inpsqlerr');
 	if (err.status) {
 		next(err);
 	} else {
@@ -20,11 +19,9 @@ exports.psqlErrorHandling = (err, req, res, next) => {
 };
 
 exports.customErrorHandling = (err, req, res, next) => {
-	console.log('in custrom errrerre');
 	res.status(err.status).send({ msg: err.msg });
 };
 
 exports.noRouteErrorHandling = (req, res, next) => {
-	console.log('rootnotsiufnb');
 	res.status(404).send({ msg: 'Route not found' });
 };

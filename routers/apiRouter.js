@@ -4,12 +4,11 @@ const { articleRouter } = require('./articleRouter.js');
 const { badMethod } = require('../error-middleware/error-middleware');
 const { topicRouter } = require('./topicRouter.js');
 const { commentRouter } = require('./commentRouter.js');
+const { serveApiJson } = require('../controllers/api-c.js');
 
 apiRouter
 	.route('/')
-	.get(() => {
-		console.log('you have made a get request to the api root');
-	})
+	.get(serveApiJson)
 	.all(badMethod);
 // .use('/users', userRouter)
 

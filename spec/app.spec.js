@@ -37,6 +37,18 @@ describe('==== app ====', () => {
 				});
 		});
 	});
+
+	describe.only('/api', () => {
+		it('GET: 200  - serves JSON file to user', () => {
+			return request(app)
+				.get('/api')
+				.expect(200)
+				.then(api => {
+					expect(api.body).to.be.an('object');
+				});
+		});
+	});
+
 	describe(`${endpoint}/api/topics`, () => {
 		describe(`GET:200 - /`, () => {
 			it('200 - returns topics object', () => {

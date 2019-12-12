@@ -4,8 +4,8 @@ exports.up = function(knex) {
 			.string('username') // << table.string('name', [limit])
 			.primary()
 			.unique();
-		table.string('avatar_url');
-		table.string('name');
+		table.string('avatar_url').notNullable();
+		table.string('name').notNullable();
 	});
 };
 
