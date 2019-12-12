@@ -36,9 +36,11 @@ exports.applyCount = (articles, count) => {
 };
 
 exports.isLegalNumber = num => {
-	if (typeof num === 'number' && !isNaN(num) && num < 500 && num > -500) {
-		return true;
-	} else {
-		return false;
-	}
+	const validators = [
+		value => typeof value === 'number',
+		value => !isNaN(value),
+		value => value < 500,
+		value => value > -500
+	];
+	return validators.every(validator => validator(num));
 };

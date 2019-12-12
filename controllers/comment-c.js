@@ -3,9 +3,11 @@ const { updateComment, destroyComment } = require('../models/comment-m.js');
 exports.patchCommentById = (req, res, next) => {
 	const { comment_id } = req.params;
 	const { inc_votes, ...invalid } = req.body;
-	updateComment(comment_id, inc_votes, invalid)
+	if (Object.keys(invalid).length)
+		next({ status: 400, msg: 'Patch request invalid' });
+	updateComment(comment_id, inc_votes)
 		.then(comment => {
-			res.status(200).send(comment);
+			res.status(200).send({ comment });
 		})
 		.catch(err => {
 			next(err);

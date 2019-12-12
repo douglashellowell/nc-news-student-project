@@ -1,6 +1,6 @@
 const topicRouter = require('express').Router();
 const { getAllTopics } = require('../controllers/topic-c.js');
-const { badMethod } = require('../error-middleware/express-errors');
+const { badMethod } = require('../error-middleware/error-middleware');
 
 topicRouter
 	.route('/')

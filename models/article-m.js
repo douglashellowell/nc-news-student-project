@@ -1,77 +1,60 @@
 const connection = require('../db/connection');
 const { isLegalNumber } = require('../db/utils/utils');
+const { checkExists } = require('../models/database_util-m');
 
 const selectAllArticles = (
 	sort_by = 'created_at',
 	order = 'desc',
 	author,
-	topic,
-	invalid
+	topic
 ) => {
-	if (Object.keys(invalid).length) {
-		return Promise.reject({ status: 400, msg: 'Query invalid' });
-	} else {
-		return connection
-			.select(
-				'articles.author',
-				'articles.title',
-				'articles.article_id',
-				'articles.created_at',
-				'articles.votes',
-				'articles.topic'
-			)
-			.count({ comment_count: 'comments.article_id' })
-			.from('articles')
-			.modify(query => {
-				if (author) query.where('articles.author', '=', author);
-			})
-			.modify(query => {
-				if (topic) query.where('articles.topic', '=', topic);
-			})
-			.leftJoin('comments', 'articles.article_id', 'comments.article_id')
-			.orderBy(sort_by, order)
-			.groupBy('articles.article_id')
-			.then(articles => {
-				if (articles.length) return [articles];
-				else {
-					let table, column, value;
-					if (author) {
-						table = 'users';
-						column = 'username';
-						value = author;
-					} else if (topic) {
-						table = 'topics';
-						column = 'slug';
-						value = topic;
-					}
-					const queryPromise = connection
-						.select(column)
-						.from(table)
-						.where(column, value);
-					return Promise.all([articles, queryPromise, table]);
+	return connection
+		.select(
+			'articles.author',
+			'articles.title',
+			'articles.article_id',
+			'articles.created_at',
+			'articles.votes',
+			'articles.topic'
+		)
+		.count({ comment_count: 'comments.article_id' })
+		.from('articles')
+		.modify(query => {
+			if (author) query.where('articles.author', '=', author);
+			if (topic) query.where('articles.topic', '=', topic);
+		})
+		.leftJoin('comments', 'articles.article_id', 'comments.article_id')
+		.orderBy(sort_by, order)
+		.groupBy('articles.article_id')
+		.then(articles => {
+			if (articles.length) return [articles];
+			else {
+				let table, column, value;
+				if (author) {
+					table = 'users';
+					column = 'username';
+					value = author;
+				} else if (topic) {
+					table = 'topics';
+					column = 'slug';
+					value = topic;
 				}
-			})
-			.then(([articles, query, table]) => {
-				if (query === undefined || query.length) return { articles: articles };
-				else {
-					return Promise.reject({
-						status: 404,
-						msg: `${table} content not found`
-					});
-				}
-			});
-	}
+
+				return Promise.all([articles, checkExists(table, column, value)]);
+			}
+		})
+		.then(([articles, filterExists]) => {
+			if (articles) return articles;
+			if (filterExists) return [];
+			return Promise.reject({ status: 404, msg: 'No articles in database' });
+		});
 };
 
 const selectCommentsById = (
 	article_id,
 	sort_by = 'created_at',
-	order = 'desc',
-	invalid
+	order = 'desc'
 ) => {
-	if (Object.keys(invalid).length) {
-		return Promise.reject({ status: 400, msg: 'Invalid input syntax' });
-	}
 	return connection
 		.select('*')
 		.from('comments')
@@ -80,17 +63,15 @@ const selectCommentsById = (
 		.then(comments => {
 			if (comments.length) return [comments];
 			else {
-				const articlePromise = connection
-					.select('article_id')
-					.from('articles')
-					.where('article_id', article_id);
-				return Promise.all([comments, articlePromise]);
+				return Promise.all([
+					false,
+					checkExists('articles', 'article_id', article_id)
+				]);
 			}
 		})
-		.then(([comments, article]) => {
-			if (article === undefined || article.length)
-				return { comments: comments };
-			else return Promise.reject({ status: 404, msg: 'Article not found' });
+		.then(([comments, articleExists]) => {
+			if (comments) return comments;
+			if (articleExists) return [];
 		});
 };
 
@@ -108,7 +89,7 @@ const insertComment = (article_id, comment) => {
 		.insert(toInsert)
 		.into('comments')
 		.then(([comment]) => {
-			return { comment };
+			return comment;
 		});
 };
 
@@ -125,29 +106,25 @@ const selectArticleById = article_id => {
 				return Promise.reject({ status: 404, msg: 'Article not found' });
 			else {
 				const { comment_count, ...rest } = article[0];
-				return { article: { comment_count: comment_count, ...rest } };
+				return { comment_count: comment_count, ...rest };
 			}
 		});
 };
 
-const updateArticleById = (article_id, inc_votes = 0, invalid) => {
-	if (Object.keys(invalid).length) {
-		return Promise.reject({ status: 400, msg: 'Patch request invalid' });
+const updateArticleById = (article_id, inc_votes = 0) => {
+	if (isLegalNumber(inc_votes)) {
+		return connection
+			.increment('votes', inc_votes)
+			.from('articles')
+			.where('article_id', article_id)
+			.returning('*')
+			.then(([article]) => {
+				if (!article)
+					return Promise.reject({ status: 404, msg: 'Article not found' });
+				else return article;
+			});
 	} else {
-		if (isLegalNumber(inc_votes)) {
-			return connection
-				.increment('votes', inc_votes)
-				.from('articles')
-				.where('article_id', article_id)
-				.returning('*')
-				.then(([article]) => {
-					if (!article)
-						return Promise.reject({ status: 404, msg: 'Article not found' });
-					else return { article };
-				});
-		} else {
-			return Promise.reject({ status: 400, msg: 'Patch request invalid' });
-		}
+		return Promise.reject({ status: 400, msg: 'Patch request invalid' });
 	}
 };
 

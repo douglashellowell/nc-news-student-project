@@ -223,7 +223,7 @@ describe('==== app ====', () => {
 						.get('/api/articles?author=imNotInDatabase ')
 						.expect(404)
 						.then(response => {
-							expect(response.body.msg).to.equal('users content not found');
+							expect(response.body.msg).to.equal('"imNotInDatabase" not found');
 						});
 				});
 				it('200 - ?author=lurker (in database but has no articles)', () => {
@@ -247,7 +247,7 @@ describe('==== app ====', () => {
 						.get('/api/articles?topic=missingTopic')
 						.expect(404)
 						.then(response => {
-							expect(response.body.msg).to.equal('topics content not found');
+							expect(response.body.msg).to.equal('"missingTopic" not found');
 						});
 				});
 				it('200 - ?topic=paper (in database but has no articles)', () => {
@@ -514,7 +514,7 @@ describe('==== app ====', () => {
 						.expect(404)
 						.then(response => {
 							const { msg } = response.body;
-							expect(msg).to.equal('Article not found');
+							expect(msg).to.equal('"9001" not found');
 						});
 				});
 				it('400 - article_id invalid', () => {
@@ -542,7 +542,7 @@ describe('==== app ====', () => {
 							.expect(400)
 							.then(response => {
 								const { msg } = response.body;
-								expect(msg).to.equal('Invalid input syntax');
+								expect(msg).to.equal('Query invalid');
 							});
 					});
 					it('200 sort_by=votes - (w/ default order=desc)', () => {
@@ -584,7 +584,6 @@ describe('==== app ====', () => {
 						})
 						.expect(201)
 						.then(response => {
-							// console.log('complete!');
 							const { comment } = response.body;
 							expect(comment).to.have.keys(
 								'body',

@@ -1,5 +1,5 @@
 const articleRouter = require('express').Router();
-const { badMethod } = require('../error-middleware/express-errors.js');
+const { badMethod } = require('../error-middleware/error-middleware.js');
 
 const {
 	getAllArticles,

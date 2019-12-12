@@ -1,5 +1,5 @@
 const commentRouter = require('express').Router();
-const { badMethod } = require('../error-middleware/express-errors');
+const { badMethod } = require('../error-middleware/error-middleware');
 const {
 	patchCommentById,
 	deleteCommentById

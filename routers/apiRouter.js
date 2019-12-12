@@ -1,7 +1,7 @@
 const apiRouter = require('express').Router();
 const { userRouter } = require('./userRouter.js');
 const { articleRouter } = require('./articleRouter.js');
-const { badMethod } = require('../error-middleware/express-errors');
+const { badMethod } = require('../error-middleware/error-middleware');
 const { topicRouter } = require('./topicRouter.js');
 const { commentRouter } = require('./commentRouter.js');
 
