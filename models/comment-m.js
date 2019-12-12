@@ -1,5 +1,5 @@
-const connection = require('../../db/connection');
-const { isLegalNumber } = require('../../db/utils/utils');
+const connection = require('../db/connection');
+const { isLegalNumber } = require('../db/utils/utils');
 
 const updateComment = (comment_id, inc_votes = 0, invalid) => {
 	if (Object.keys(invalid).length) {

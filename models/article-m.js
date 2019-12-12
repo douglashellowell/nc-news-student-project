@@ -1,5 +1,5 @@
-const connection = require('../../db/connection');
-const { isLegalNumber } = require('../../db/utils/utils');
+const connection = require('../db/connection');
+const { isLegalNumber } = require('../db/utils/utils');
 
 const selectAllArticles = (
 	sort_by = 'created_at',

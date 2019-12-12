@@ -8,7 +8,7 @@ chai.use(chaiSorted);
 const knex = require('knex');
 const connection = require('../db/connection'); // < knex connection client
 const request = require('supertest');
-const { app } = require('../app.js');
+const app = require('../app.js');
 
 const endpoint = '\x1b[45m';
 
@@ -596,14 +596,14 @@ describe('==== app ====', () => {
 							);
 						});
 				});
-				it('400 - when user does not exist', () => {
+				it('404 - when user does not exist', () => {
 					return request(app)
 						.post('/api/articles/2/comments')
 						.send({
 							username: 'doug',
 							body: 'I do not have an account!'
 						})
-						.expect(400)
+						.expect(404)
 						.then(response => {
 							const { msg } = response.body;
 							expect(msg).to.equal('Target does not exist in database');
@@ -656,7 +656,7 @@ describe('==== app ====', () => {
 							username: 'icellusedkars',
 							body: 'This article is interesting!'
 						})
-						.expect(400)
+						.expect(404)
 						.then(response => {
 							const { msg } = response.body;
 							expect(msg).to.equal('Target does not exist in database');

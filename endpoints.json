@@ -1,27 +1,72 @@
 {
-  "GET /api": {
-    "description": "serves up a json representation of all the available endpoints of the api"
-  },
-  "GET /api/topics": {
-    "description": "serves an array of all topics",
-    "queries": [],
-    "exampleResponse": {
-      "topics": [{ "slug": "football", "description": "Footie!" }]
-    }
-  },
-  "GET /api/articles": {
-    "description": "serves an array of all topics",
-    "queries": ["author", "topic", "sort_by", "order"],
-    "exampleResponse": {
-      "articles": [
-        {
-          "title": "Seafood substitutions are increasing",
-          "topic": "cooking",
-          "author": "weegembump",
-          "body": "Text from the article..",
-          "created_at": 1527695953341
-        }
-      ]
-    }
-  }
+	"GET /api": {
+		"description": "serves up a json representation of all the available endpoints of the api"
+	},
+	"GET /api/topics": {
+		"description": "serves an array of all topics",
+		"queries": [],
+		"exampleResponse": {
+			"topics": [{ "slug": "football", "description": "Footie!" }]
+		}
+	},
+	"GET /api/articles": {
+		"description": "serves an array of all topics",
+		"queries": ["author", "topic", "sort_by", "order"],
+		"exampleResponse": {
+			"articles": [
+				{
+					"article_id": 1,
+					"title": "Seafood substitutions are increasing",
+					"topic": "cooking",
+					"author": "weegembump",
+					"body": "Text from the article..",
+					"created_at": 1527695953341,
+					"comment_count": "13",
+					"votes": 1
+				},
+				{
+					"article_id": 2,
+					"title": "The best things in life are free...",
+					"topic": "finance",
+					"author": "doug123",
+					"body": "Text from the article..",
+					"created_at": 1527695953341,
+					"comment_count": "17",
+					"votes": 10
+				}
+			]
+		}
+	},
+	"GET /api/articles/:article_id": {
+		"description": "serves an object with article from specified article_id",
+		"queries": [],
+		"exampleResponse": {
+			"article": {
+				"article_id": 2,
+				"title": "The best things in life are free...",
+				"topic": "finance",
+				"author": "doug123",
+				"body": "Text from the article..",
+				"created_at": 1527695953341,
+				"comment_count": "17",
+				"votes": 10
+			}
+		}
+	},
+	"PATCH /api/articles/:article_id": {
+		"description": "serves an object with article from specified article_id",
+		"queries": [],
+		"exampleResponse": {
+			"article": {
+				"article_id": 2,
+				"title": "The best things in life are free...",
+				"topic": "finance",
+				"author": "doug123",
+				"body": "Text from the article..",
+				"created_at": 1527695953341,
+				"comment_count": "17",
+				"votes": 10
+			}
+		}
+	}
 }

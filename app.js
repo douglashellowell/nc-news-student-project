@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-const { apiRouter } = require('./app/routers/apiRouter.js');
+const { apiRouter } = require('./routers/apiRouter.js');
 
 app.use(express.json());
 
@@ -21,7 +21,7 @@ app.use((err, req, res, next) => {
 		const psqlErrors = {
 			'42703': [400, 'Column does not exist'],
 			'22P02': [400, 'Invalid input syntax'],
-			'23503': [400, 'Target does not exist in database']
+			'23503': [404, 'Target does not exist in database']
 		};
 		const { code } = err;
 		res.status(psqlErrors[code][0]).send({ msg: psqlErrors[code][1] });
@@ -34,7 +34,7 @@ app.use((err, req, res, next) => {
 	res.status(err.status).send({ msg: err.msg });
 });
 
-module.exports = { app };
+module.exports = app;
 
 /*
 
