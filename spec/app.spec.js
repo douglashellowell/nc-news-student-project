@@ -8,7 +8,7 @@ chai.use(chaiSorted);
 const knex = require('knex');
 const connection = require('../db/connection'); // < knex connection client
 const request = require('supertest');
-const { app } = require('../app/app.js');
+const { app } = require('../app.js');
 
 const endpoint = '\x1b[45m';
 
@@ -383,7 +383,6 @@ describe('==== app ====', () => {
 						.send()
 						.expect(200)
 						.then(updatedArticle => {
-							console.log(updatedArticle.body.article);
 							expect(updatedArticle.body.article.votes).to.equal(0);
 						});
 				});

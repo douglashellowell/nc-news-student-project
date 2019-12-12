@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 
-const { apiRouter } = require('./routers/apiRouter.js');
+const { apiRouter } = require('./app/routers/apiRouter.js');
 
 app.use(express.json());
 
@@ -13,11 +13,11 @@ app.all('/*', (req, res, next) => {
 
 // PSQL error middleware
 app.use((err, req, res, next) => {
-	console.log('it is an err alright!');
+	// console.log('it is an err alright!');
 	if (err.status) {
 		next(err);
 	} else {
-		console.log('psql error', err);
+		// console.log('psql error', err);
 		const psqlErrors = {
 			'42703': [400, 'Column does not exist'],
 			'22P02': [400, 'Invalid input syntax'],
@@ -30,7 +30,7 @@ app.use((err, req, res, next) => {
 
 // Express/Custom Error middleware
 app.use((err, req, res, next) => {
-	console.log('cutsom errors middleware', err);
+	// console.log('cutsom errors middleware', err);
 	res.status(err.status).send({ msg: err.msg });
 });
 
