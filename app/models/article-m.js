@@ -113,28 +113,24 @@ const insertComment = (article_id, comment) => {
 };
 
 const selectArticleById = article_id => {
-	if (isNaN(+article_id)) {
-		return Promise.reject({ status: 404, msg: 'Article not found' });
-	} else {
-		return connection
-			.select('articles.*')
-			.count({ comment_count: 'comments.article_id' })
-			.from('articles')
-			.leftJoin('comments', 'articles.article_id', 'comments.article_id')
-			.where('articles.article_id', article_id)
-			.groupBy('articles.article_id')
-			.then(article => {
-				if (!article.length)
-					return Promise.reject({ status: 404, msg: 'Article not found' });
-				else {
-					const { comment_count, ...rest } = article[0];
-					return { article: { comment_count: +comment_count, ...rest } };
-				}
-			});
-	}
+	return connection
+		.select('articles.*')
+		.count({ comment_count: 'comments.article_id' })
+		.from('articles')
+		.leftJoin('comments', 'articles.article_id', 'comments.article_id')
+		.where('articles.article_id', article_id)
+		.groupBy('articles.article_id')
+		.then(article => {
+			if (!article.length)
+				return Promise.reject({ status: 404, msg: 'Article not found' });
+			else {
+				const { comment_count, ...rest } = article[0];
+				return { article: { comment_count: comment_count, ...rest } };
+			}
+		});
 };
 
-const updateArticleById = (article_id, inc_votes, invalid) => {
+const updateArticleById = (article_id, inc_votes = 0, invalid) => {
 	if (Object.keys(invalid).length) {
 		return Promise.reject({ status: 400, msg: 'Patch request invalid' });
 	} else {

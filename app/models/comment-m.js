@@ -1,7 +1,7 @@
 const connection = require('../../db/connection');
 const { isLegalNumber } = require('../../db/utils/utils');
 
-const updateComment = (comment_id, inc_votes, invalid) => {
+const updateComment = (comment_id, inc_votes = 0, invalid) => {
 	if (Object.keys(invalid).length) {
 		return Promise.reject({ status: 400, msg: 'Patch request invalid' });
 	}
@@ -12,7 +12,10 @@ const updateComment = (comment_id, inc_votes, invalid) => {
 			.where('comment_id', comment_id)
 			.returning('*')
 			.then(([comment]) => {
-				return { comment };
+				if (comment) return { comment };
+				else {
+					return Promise.reject({ status: 404, msg: 'Comment not found' });
+				}
 			});
 	} else {
 		return Promise.reject({ status: 400, msg: 'Patch request invalid' });
@@ -26,7 +29,7 @@ const destroyComment = comment_id => {
 		.del()
 		.then(response => {
 			if (!response)
-				return Promise.reject({ status: 400, msg: 'Comment not found' });
+				return Promise.reject({ status: 404, msg: 'Comment not found' });
 		});
 };
 

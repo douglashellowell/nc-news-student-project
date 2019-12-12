@@ -13,14 +13,15 @@ app.all('/*', (req, res, next) => {
 
 // PSQL error middleware
 app.use((err, req, res, next) => {
-	// console.log('it is an err alright!');
+	console.log('it is an err alright!');
 	if (err.status) {
 		next(err);
 	} else {
-		// console.log('psql error', err);
+		console.log('psql error', err);
 		const psqlErrors = {
+			'42703': [400, 'Column does not exist'],
 			'22P02': [400, 'Invalid input syntax'],
-			'23503': [400, 'User does not exist']
+			'23503': [400, 'Target does not exist in database']
 		};
 		const { code } = err;
 		res.status(psqlErrors[code][0]).send({ msg: psqlErrors[code][1] });
@@ -29,7 +30,7 @@ app.use((err, req, res, next) => {
 
 // Express/Custom Error middleware
 app.use((err, req, res, next) => {
-	// console.log('cutsom errors middleware', err);
+	console.log('cutsom errors middleware', err);
 	res.status(err.status).send({ msg: err.msg });
 });
 

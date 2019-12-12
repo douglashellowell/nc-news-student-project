@@ -10,9 +10,6 @@ const connection = require('../db/connection'); // < knex connection client
 const request = require('supertest');
 const { app } = require('../app/app.js');
 
-// const err = '\x1b[31m';
-// const ok = '\x1b[32m';
-// const _404 = '\x1b[33m';
 const endpoint = '\x1b[45m';
 
 console.log(
@@ -195,6 +192,15 @@ describe('==== app ====', () => {
 						expect(response.body.articles).to.be.descendingBy('title');
 					});
 			});
+			it('400 - ?sort_by=column_not_in_database', () => {
+				return request(app)
+					.get('/api/articles?sort_by=column_not_in_database')
+					.expect(400)
+					.then(response => {
+						const { msg } = response.body;
+						expect(msg).to.equal('Column does not exist');
+					});
+			});
 			it('200 - ?sort_by=topic&order=desc', () => {
 				return request(app)
 					.get('/api/articles?sort_by=topic&order=asc')
@@ -318,13 +324,13 @@ describe('==== app ====', () => {
 									topic: 'mitch',
 									author: 'butter_bridge',
 									created_at: '2018-11-15T12:21:54.171Z',
-									comment_count: 13
+									comment_count: '13'
 								}
 							});
 						});
 				});
 			});
-			describe('GET ERROR: 404', () => {
+			describe('GET ERROR: 404/400', () => {
 				it('404 - responds with error when article_id not in db', () => {
 					return request(app)
 						.get('/api/articles/69')
@@ -333,12 +339,12 @@ describe('==== app ====', () => {
 							expect(err.body.msg).to.equal('Article not found');
 						});
 				});
-				it('404 - Correct error and 404code when non-number passed as parametric', () => {
+				it('400 - Correct error and 400code when non-number passed as parametric', () => {
 					return request(app)
 						.get('/api/articles/NinetySix')
-						.expect(404)
+						.expect(400)
 						.then(err => {
-							expect(err.body.msg).to.equal('Article not found');
+							expect(err.body.msg).to.equal('Invalid input syntax');
 						});
 				});
 			});
@@ -369,6 +375,16 @@ describe('==== app ====', () => {
 						.expect(200)
 						.then(updatedArticle => {
 							expect(updatedArticle.body.article.votes).to.equal(-1);
+						});
+				});
+				it('200 - patch request has no body - no votes cast', () => {
+					return request(app)
+						.patch('/api/articles/2')
+						.send()
+						.expect(200)
+						.then(updatedArticle => {
+							console.log(updatedArticle.body.article);
+							expect(updatedArticle.body.article.votes).to.equal(0);
 						});
 				});
 			});
@@ -413,15 +429,7 @@ describe('==== app ====', () => {
 							expect(err.body.msg).to.equal('Invalid input syntax');
 						});
 				});
-				it('400 - patch request has no body', () => {
-					return request(app)
-						.patch('/api/articles/2')
-						.send()
-						.expect(400)
-						.then(err => {
-							expect(err.body.msg).to.equal('Patch request invalid');
-						});
-				});
+
 				it('400 - patch request object has no inc_votes', () => {
 					return request(app)
 						.patch('/api/articles/2')
@@ -519,14 +527,52 @@ describe('==== app ====', () => {
 							expect(msg).to.equal('Invalid input syntax');
 						});
 				});
-				it('400 - Invalid search query (/api/articles/2/comments?gossip=true)', () => {
-					return request(app)
-						.get('/api/articles/3/comments?gossip=true')
-						.expect(400)
-						.then(response => {
-							const { msg } = response.body;
-							expect(msg).to.equal('Invalid input syntax');
-						});
+				describe('Queries', () => {
+					it('defaults to ?sort_by:created_at&order=desc', () => {
+						return request(app)
+							.get('/api/articles/5/comments')
+							.expect(200)
+							.then(response => {
+								const { comments } = response.body;
+								expect(comments).to.be.descendingBy('created_at');
+							});
+					});
+					it('400 - Invalid search query (/api/articles/2/comments?gossip=true)', () => {
+						return request(app)
+							.get('/api/articles/3/comments?gossip=true')
+							.expect(400)
+							.then(response => {
+								const { msg } = response.body;
+								expect(msg).to.equal('Invalid input syntax');
+							});
+					});
+					it('200 sort_by=votes - (w/ default order=desc)', () => {
+						return request(app)
+							.get('/api/articles/5/comments?sort_by=votes')
+							.expect(200)
+							.then(response => {
+								const { comments } = response.body;
+								expect(comments).to.be.descendingBy('votes');
+							});
+					});
+					it('200 order=asc - (w/ default sort_by=created_at)', () => {
+						return request(app)
+							.get('/api/articles/5/comments?order=asc')
+							.expect(200)
+							.then(response => {
+								const { comments } = response.body;
+								expect(comments).to.be.ascendingBy('created_at');
+							});
+					});
+					it('400 sort_by=not_a_column', () => {
+						return request(app)
+							.get('/api/articles/3/comments?sort_by=not_a_column')
+							.expect(400)
+							.then(response => {
+								const { msg } = response.body;
+								expect(msg).to.equal('Column does not exist');
+							});
+					});
 				});
 			});
 			describe('POST', () => {
@@ -561,7 +607,7 @@ describe('==== app ====', () => {
 						.expect(400)
 						.then(response => {
 							const { msg } = response.body;
-							expect(msg).to.equal('User does not exist');
+							expect(msg).to.equal('Target does not exist in database');
 						});
 				});
 				it('400 - when post contains no content', () => {
@@ -602,6 +648,19 @@ describe('==== app ====', () => {
 						.then(response => {
 							const { msg } = response.body;
 							expect(msg).to.equal('Invalid input syntax');
+						});
+				});
+				it('400 - when article does not exist', () => {
+					return request(app)
+						.post('/api/articles/666999/comments')
+						.send({
+							username: 'icellusedkars',
+							body: 'This article is interesting!'
+						})
+						.expect(400)
+						.then(response => {
+							const { msg } = response.body;
+							expect(msg).to.equal('Target does not exist in database');
 						});
 				});
 			});
@@ -659,17 +718,29 @@ describe('==== app ====', () => {
 						expect(response.body.comment.votes).to.equal(15);
 					});
 			});
-			it('400 - patch object does not have inc_votes', () => {
+
+			it('200 - patch request has no body, no votes cast', () => {
 				return request(app)
 					.patch('/api/comments/1')
-					.send({ please_up_votes_by: 1 })
-					.expect(400)
+					.send()
+					.expect(200)
 					.then(response => {
-						expect(response.body.msg).to.equal('Patch request invalid');
+						expect(response.body.comment.votes).to.equal(16);
 					});
 			});
 		});
 		describe('PATCH 400 - when given object doesnt conform to rules', () => {
+			it('404 - When comment_id is not in database', () => {
+				return request(app)
+					.patch('/api/comments/666999')
+					.send({
+						inc_votes: 2
+					})
+					.expect(404)
+					.then(response => {
+						expect(response.body.msg).to.equal('Comment not found');
+					});
+			});
 			it('400 - wrong increment type (non number)', () => {
 				return request(app)
 					.patch('/api/comments/2')
@@ -708,15 +779,6 @@ describe('==== app ====', () => {
 					.expect(400)
 					.then(response => {
 						expect(response.body.msg).to.equal('Invalid input syntax');
-					});
-			});
-			it('400 - patch request has no body', () => {
-				return request(app)
-					.patch('/api/comments/2')
-					.send()
-					.expect(400)
-					.then(response => {
-						expect(response.body.msg).to.equal('Patch request invalid');
 					});
 			});
 			it('400 - patch request object has no inc_votes', () => {
@@ -758,7 +820,7 @@ describe('==== app ====', () => {
 			it('400 - comment_id not in database', () => {
 				return request(app)
 					.delete('/api/comments/5555')
-					.expect(400)
+					.expect(404)
 					.then(response => {
 						const { msg } = response.body;
 						expect(msg).to.equal('Comment not found');
