@@ -26,15 +26,6 @@ exports.formatComments = (comments, articleRef) => {
 	});
 };
 
-exports.applyCount = (articles, count) => {
-	return articles.map(({ ...article }, index) => {
-		return {
-			...article,
-			comment_count: Number(count[index].count)
-		};
-	});
-};
-
 exports.isLegalNumber = num => {
 	const validators = [
 		value => typeof value === 'number',

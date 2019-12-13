@@ -19,7 +19,15 @@ exports.psqlErrorHandling = (err, req, res, next) => {
 };
 
 exports.customErrorHandling = (err, req, res, next) => {
-	res.status(err.status).send({ msg: err.msg });
+	if (err.status) {
+		res.status(err.status).send({ msg: err.msg });
+	} else {
+		res.status(500).send({
+			msg:
+				'Unhandled error, please send me the following so I can investigate:\n===================================================================\n\n',
+			err
+		});
+	}
 };
 
 exports.noRouteErrorHandling = (req, res, next) => {

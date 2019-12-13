@@ -38,7 +38,7 @@ describe('==== app ====', () => {
 		});
 	});
 
-	describe.only('/api', () => {
+	describe('/api', () => {
 		it('GET: 200  - serves JSON file to user', () => {
 			return request(app)
 				.get('/api')

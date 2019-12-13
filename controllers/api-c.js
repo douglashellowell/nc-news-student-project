@@ -1,12 +1,6 @@
-const readJson = require('../models/api-m.js');
+const endpointsJSON = require('../endpoints.json');
 
 exports.serveApiJson = (req, res, next) => {
-	console.log('in serveApiJson controller');
-	readJson()
-		.then(jsonFile => {
-			res.status(200).send(jsonFile);
-		})
-		.catch(err => {
-			res.status(500).send({ msg: 'Api not found' });
-		});
+	console.log('in serveAPIJSON enpoint');
+	res.status(200).send(endpointsJSON);
 };
