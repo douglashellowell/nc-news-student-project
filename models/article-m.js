@@ -6,7 +6,9 @@ const selectAllArticles = (
 	sort_by = 'created_at',
 	order = 'desc',
 	author,
-	topic
+	topic,
+	page = 1,
+	limit = 10
 ) => {
 	return connection
 		.select(
@@ -23,6 +25,8 @@ const selectAllArticles = (
 			if (author) query.where('articles.author', '=', author);
 			if (topic) query.where('articles.topic', '=', topic);
 		})
+		.limit(limit)
+		.offset(page * limit - limit)
 		.leftJoin('comments', 'articles.article_id', 'comments.article_id')
 		.orderBy(sort_by, order)
 		.groupBy('articles.article_id')
@@ -53,13 +57,17 @@ const selectAllArticles = (
 const selectCommentsById = (
 	article_id,
 	sort_by = 'created_at',
-	order = 'desc'
+	order = 'desc',
+	page = 1,
+	limit = 10
 ) => {
 	return connection
 		.select('*')
 		.from('comments')
 		.where('article_id', article_id)
 		.orderBy(sort_by, order)
+		.limit(limit)
+		.offset(page * limit - limit)
 		.then(comments => {
 			if (comments.length) return [comments];
 			else {
@@ -76,7 +84,7 @@ const selectCommentsById = (
 };
 
 const insertComment = (article_id, comment) => {
-	if (comment.body === '' || !comment.body || !comment.username) {
+	if (comment.body === '' || !comment.body) {
 		return Promise.reject({ status: 400, msg: 'Invalid post request' });
 	}
 	const toInsert = {
@@ -128,10 +136,37 @@ const updateArticleById = (article_id, inc_votes = 0) => {
 	}
 };
 
+const insertArticle = article => {
+	if (!Object.keys(article).length)
+		return Promise.reject({ status: 400, msg: 'No article data sent' });
+	if (article.body.trim() === '' || article.title.trim() === '')
+		return Promise.reject({ status: 400, msg: 'Cannot post a blank field' });
+	return connection
+		.returning('*')
+		.insert(article)
+		.into('articles')
+		.then(([article]) => {
+			return article;
+		});
+};
+
+const destroyArticle = article_id => {
+	return connection
+		.from('articles')
+		.where('article_id', article_id)
+		.del()
+		.then(response => {
+			if (!response)
+				return Promise.reject({ status: 404, msg: 'Article not found' });
+		});
+};
+
 module.exports = {
 	selectAllArticles,
 	selectCommentsById,
 	insertComment,
 	selectArticleById,
-	updateArticleById
+	updateArticleById,
+	insertArticle,
+	destroyArticle
 };

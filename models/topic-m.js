@@ -9,4 +9,14 @@ const selectAllTopics = () => {
 		});
 };
 
-module.exports = { selectAllTopics };
+const insertTopic = body => {
+	return connection
+		.returning('*')
+		.insert(body)
+		.into('topics')
+		.then(([topic]) => {
+			return topic;
+		});
+};
+
+module.exports = { selectAllTopics, insertTopic };

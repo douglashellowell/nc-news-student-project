@@ -8,10 +8,11 @@ exports.up = function(knex) {
 		table
 			.integer('article_id')
 			.references('articles.article_id')
+			.onDelete('CASCADE')
 			.notNullable();
 		table.integer('votes').defaultTo(0);
 		table.timestamp('created_at').defaultTo(knex.fn.now());
-		table.text('body').notNullable(); // << string Vs. text ?
+		table.text('body').notNullable();
 	});
 };
 

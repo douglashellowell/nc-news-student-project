@@ -80,9 +80,51 @@ describe('==== app ====', () => {
 					});
 			});
 		});
+		describe('POST', () => {
+			it('201 - Successfully posts topic to database', () => {
+				return request(app)
+					.post('/api/topics')
+					.send({
+						description: 'its a lotta nothin',
+						slug: 'dougs favourite foods'
+					})
+					.expect(201)
+					.then(response => {
+						expect(response.body).to.eql({
+							topic: {
+								description: 'its a lotta nothin',
+								slug: 'dougs favourite foods'
+							}
+						});
+					});
+			});
+			it('400 - when post slug/topic is already in database', () => {
+				return request(app)
+					.post('/api/topics')
+					.send({
+						description: 'its what water craves',
+						slug: 'paper'
+					})
+					.expect(400)
+					.then(response => {
+						expect(response.body.msg).to.equal('Already exists in database');
+					});
+			});
+			it('400 - post has incomplete info', () => {
+				return request(app)
+					.post('/api/topics')
+					.send({
+						description: 'its what water craves'
+					})
+					.expect(400)
+					.then(response => {
+						expect(response.body.msg).to.equal('Vital data missing');
+					});
+			});
+		});
 		describe(`POST/PUT/PATCH/DELETE: 405 - method not allowed`, () => {
 			it('405 - does not allow other methods', () => {
-				const badMethods = ['delete', 'post', 'put', 'patch'];
+				const badMethods = ['delete', 'put', 'patch'];
 				const methodPromises = badMethods.map(method => {
 					return request(app)
 						[method]('/api/topics')
@@ -96,7 +138,7 @@ describe('==== app ====', () => {
 				return Promise.all(methodPromises);
 			});
 		});
-	}); // << test order etc
+	});
 	describe(`${endpoint}/api/users`, () => {
 		describe('GET: 200 - /:username', () => {
 			it('200 - returns single user object', () => {
@@ -139,9 +181,69 @@ describe('==== app ====', () => {
 					});
 			});
 		});
+		describe.only('GET: 200 - /', () => {
+			it('returns array of all users', () => {
+				return request(app)
+					.get('/api/users')
+					.expect(200)
+					.then(response => {
+						expect(response.body.users).to.be.an('array');
+					});
+			});
+		});
+		describe('POST: /', () => {
+			describe('201', () => {
+				it('201 - successfully posts new user to database', () => {
+					return request(app)
+						.post('/api/users')
+						.send({
+							username: 'digdoug',
+							name: 'doug',
+							avatar_url: 'www.image.web'
+						})
+						.expect(201)
+						.then(response => {
+							expect(response.body).to.eql({
+								user: {
+									username: 'digdoug',
+									name: 'doug',
+									avatar_url: 'www.image.web'
+								}
+							});
+						});
+				});
+			});
+			describe('400', () => {
+				it('400 - username already exists', () => {
+					return request(app)
+						.post('/api/users')
+						.send({
+							username: 'lurker',
+							name: 'doug',
+							avatar_url: 'www.image.web'
+						})
+						.expect(400)
+						.then(response => {
+							expect(response.body.msg).to.equal('Already exists in database');
+						});
+				});
+				it('400 - missing vital data', () => {
+					return request(app)
+						.post('/api/users')
+						.send({
+							name: 'doug',
+							avatar_url: 'www.image.web'
+						})
+						.expect(400)
+						.then(response => {
+							expect(response.body.msg).to.equal('Vital data missing');
+						});
+				});
+			});
+		});
 		describe(`POST/PUT/PATCH/DELETE: 405 - method not allowed`, () => {
 			it('405 - does not allow other methods', () => {
-				const badMethods = ['delete', 'post', 'put', 'patch'];
+				const badMethods = ['delete', 'put', 'patch'];
 				const methodPromises = badMethods.map(method => {
 					return request(app)
 						[method]('/api/users/345')
@@ -157,14 +259,14 @@ describe('==== app ====', () => {
 		});
 	});
 	describe(`${endpoint}/api/articles`, () => {
-		// ${endpoint}
 		describe('GET 200 - /', () => {
 			it('200 - gets all articles with correct keys', () => {
 				return request(app)
 					.get('/api/articles')
 					.expect(200)
 					.then(response => {
-						expect(response.body.articles.length).to.equal(12);
+						expect(response.body.articles.length).to.equal(10);
+						// defaults to ?limit=10
 						response.body.articles.forEach(article => {
 							expect(article).to.have.keys(
 								'article_id',
@@ -188,6 +290,22 @@ describe('==== app ====', () => {
 			});
 		});
 		describe('GET - Queries', () => {
+			it('200 - ?limit=5', () => {
+				return request(app)
+					.get('/api/articles?limit=5')
+					.expect(200)
+					.then(response => {
+						expect(response.body.articles.length).to.equal(5);
+					});
+			});
+			it('200 ?limit=5&p=2', () => {
+				return request(app)
+					.get('/api/articles?limit=5&page=2')
+					.expect(200)
+					.then(response => {
+						expect(response.body.articles[0].title).to.equal('A');
+					});
+			});
 			it('200 - ?order=asc returns ascending by created_at', () => {
 				return request(app)
 					.get('/api/articles?order=asc')
@@ -304,9 +422,95 @@ describe('==== app ====', () => {
 				});
 			});
 		});
+		describe('POST 201/404', () => {
+			it('201 - Successfully posts an article', () => {
+				return request(app)
+					.post('/api/articles')
+					.send({
+						title: 'My article title!',
+						topic: 'mitch',
+						author: 'icellusedkars',
+						body: 'My article text!'
+					})
+					.expect(201)
+					.then(response => {
+						const { article } = response.body;
+						expect(article).to.include.keys('created_at', 'votes');
+					});
+			});
+			it('404 - If either topic not in database', () => {
+				return request(app)
+					.post('/api/articles')
+					.send({
+						title: 'My article title!',
+						topic: 'I am not a real topic!',
+						author: 'icellusedkars',
+						body: 'My article text!'
+					})
+					.expect(404)
+					.then(response => {
+						const { msg } = response.body;
+						expect(msg).to.equal('Target does not exist in database');
+					});
+			});
+			it('404 - If either username not in database', () => {
+				return request(app)
+					.post('/api/articles')
+					.send({
+						title: 'My article title!',
+						topic: 'I am not a real user!',
+						author: 'icellusedkars',
+						body: 'My article text!'
+					})
+					.expect(404)
+					.then(response => {
+						const { msg } = response.body;
+						expect(msg).to.equal('Target does not exist in database');
+					});
+			});
+			it('400 - when no body sent', () => {
+				return request(app)
+					.post('/api/articles')
+					.send()
+					.expect(400)
+					.then(response => {
+						const { msg } = response.body;
+						expect(msg).to.equal('No article data sent');
+					});
+			});
+			it('400 - body missing vital data', () => {
+				return request(app)
+					.post('/api/articles')
+					.send({
+						title: 'My article title!',
+						topic: 'Articles from Mr.X!',
+						body: 'My article text!'
+					})
+					.expect(400)
+					.then(response => {
+						const { msg } = response.body;
+						expect(msg).to.equal('Vital data missing');
+					});
+			});
+			it('400 - text is an empty string', () => {
+				return request(app)
+					.post('/api/articles')
+					.send({
+						title: '',
+						topic: 'mitch',
+						author: 'icellusedkars',
+						body: 'My article text!'
+					})
+					.expect(400)
+					.then(response => {
+						const { msg } = response.body;
+						expect(msg).to.equal('Cannot post a blank field');
+					});
+			});
+		});
 		describe('POST/PUT/PATCH/DELETE: 405 - method not allowed', () => {
 			it('405 - does not allow other methods', () => {
-				const badMethods = ['delete', 'post', 'put', 'patch'];
+				const badMethods = ['delete', 'put', 'patch'];
 				const methodPromises = badMethods.map(method => {
 					return request(app)
 						[method]('/api/articles')
@@ -475,9 +679,36 @@ describe('==== app ====', () => {
 				// ???
 				// });
 			});
+			describe('DELETE 204', () => {
+				it('204 - Sucessfully deletes article, returning 204 and no body', () => {
+					return request(app)
+						.delete('/api/articles/2')
+						.expect(204);
+				});
+			});
+			describe('DELETE 404', () => {
+				it('404 - Returns 404 when article_id not in database', () => {
+					return request(app)
+						.delete('/api/articles/99')
+						.expect(404)
+						.then(response => {
+							const { msg } = response.body;
+							expect(msg).to.equal('Article not found');
+						});
+				});
+				it('400 - when article_id format invalid', () => {
+					return request(app)
+						.delete('/api/articles/ninety')
+						.expect(400)
+						.then(response => {
+							const { msg } = response.body;
+							expect(msg).to.equal('Invalid input syntax');
+						});
+				});
+			});
 			describe('POST/PUT/DELETE: 405 - method not allowed', () => {
 				it('405 - does not allow other methods', () => {
-					const badMethods = ['delete', 'post', 'put'];
+					const badMethods = ['post', 'put'];
 					const methodPromises = badMethods.map(method => {
 						return request(app)
 							[method]('/api/articles/1')
@@ -546,6 +777,24 @@ describe('==== app ====', () => {
 							.then(response => {
 								const { comments } = response.body;
 								expect(comments).to.be.descendingBy('created_at');
+							});
+					});
+					it('200 - ?limit=5', () => {
+						return request(app)
+							.get('/api/articles/1/comments?limit=5')
+							.expect(200)
+							.then(response => {
+								const { comments } = response.body;
+								expect(comments).to.have.lengthOf(5);
+							});
+					});
+					it('200 - ?limit=3&p=2', () => {
+						return request(app)
+							.get('/api/articles/1/comments?limit=3&page=2')
+							.expect(200)
+							.then(response => {
+								const { comments } = response.body;
+								expect(comments[0].comment_id).to.equal(5);
 							});
 					});
 					it('400 - Invalid search query (/api/articles/2/comments?gossip=true)', () => {
@@ -647,7 +896,7 @@ describe('==== app ====', () => {
 						.expect(400)
 						.then(response => {
 							const { msg } = response.body;
-							expect(msg).to.equal('Invalid post request');
+							expect(msg).to.equal('Vital data missing');
 						});
 				});
 				it('400 - when article_id passed as string', () => {
@@ -848,53 +1097,3 @@ describe('==== app ====', () => {
 		});
 	});
 });
-
-// Not yet complete								_
-// Part worked on, come back later				/
-// Plugged, endpoint reachable					✓
-// Model sending back basic data				✓✓
-// Basic Errors tested							✓✓✓
-// Queries tested (if applicable)				✓✓✓✓
-// Edge case error tested						✓✓✓✓✓
-// complete										~★~
-
-////////////////////////////////////////////
-/////////// apiRouter :: /api /////////////			_
-// GET ~ /										✓
-
-////////////////////////////////////////////
-////// topicRouter	:: /api/topics	///////			/
-// GET ~ /
-//-c :: getAllTopics							✓✓
-//-m :: selectAllTopics							✓✓
-
-/////////////////////////////////////////
-/////// userRouter :: /api/users ///////			/
-// GET ~ /:username
-//-c :: getUserById 							✓✓✓
-//-m :: selectUserById 							✓✓✓
-
-///////////////////////////////////////////
-//// articleRouter :: /api/articles  /////		_
-// GET ~ /
-//-c :: getAllArticles							✓✓✓✓
-//-m :: selectAllArticles						✓✓✓✓
-//-------------
-// GET ~ /:article_id
-//-c :: getArticleById							✓✓✓
-//-m :: selectArticleById						✓✓✓
-// PATCH ~ /:article_id
-//-c :: patchArticleById						✓
-//-m :: updateArticeById						✓
-//-------------
-// POST ~ /:article_id/comments
-//-c :: postComment								✓
-//-m :: insertComment							✓
-// GET ~ /:article-id/comments
-//-c :: getArticleById							✓
-//-m :: selectArticleById						✓
-
-/////////////////////////////////////////
-//// commentRouter :: /api/comments ////		_
-// PATCH ~ /:comment_id							_
-// DELETE ~/:comment_id

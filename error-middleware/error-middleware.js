@@ -11,7 +11,9 @@ exports.psqlErrorHandling = (err, req, res, next) => {
 		const psqlErrors = {
 			'42703': [400, 'Column does not exist'],
 			'22P02': [400, 'Invalid input syntax'],
-			'23503': [404, 'Target does not exist in database']
+			'23503': [404, 'Target does not exist in database'],
+			'23502': [400, 'Vital data missing'],
+			'23505': [400, 'Already exists in database']
 		};
 		const { code } = err;
 		res.status(psqlErrors[code][0]).send({ msg: psqlErrors[code][1] });

@@ -11,4 +11,23 @@ const selectUserById = username => {
 		});
 };
 
-module.exports = { selectUserById };
+const insertUser = user => {
+	return connection
+		.returning('*')
+		.insert(user)
+		.into('users')
+		.then(([user]) => {
+			return user;
+		});
+};
+
+const fetchAllUsers = () => {
+	return connection
+		.select('*')
+		.from('users')
+		.then(users => {
+			return users;
+		});
+};
+
+module.exports = { selectUserById, insertUser, fetchAllUsers };

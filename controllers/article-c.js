@@ -3,13 +3,15 @@ const {
 	selectCommentsById,
 	insertComment,
 	selectArticleById,
-	updateArticleById
+	updateArticleById,
+	insertArticle,
+	destroyArticle
 } = require('../models/article-m.js');
 
 exports.getAllArticles = (req, res, next) => {
-	const { sort_by, order, author, topic, ...invalid } = req.query;
+	const { sort_by, order, author, topic, page, limit, ...invalid } = req.query;
 	if (Object.keys(invalid).length) next({ status: 400, msg: 'Query invalid' });
-	selectAllArticles(sort_by, order, author, topic)
+	selectAllArticles(sort_by, order, author, topic, page, limit)
 		.then(articles => {
 			res.status(200).send({ articles });
 		})
@@ -20,9 +22,9 @@ exports.getAllArticles = (req, res, next) => {
 
 exports.getComments = (req, res, next) => {
 	const { article_id } = req.params;
-	const { sort_by, order, ...invalid } = req.query;
+	const { sort_by, order, page, limit, ...invalid } = req.query;
 	if (Object.keys(invalid).length) next({ status: 400, msg: 'Query invalid' });
-	selectCommentsById(article_id, sort_by, order)
+	selectCommentsById(article_id, sort_by, order, page, limit)
 		.then(comments => {
 			res.status(200).send({ comments });
 		})
@@ -62,6 +64,28 @@ exports.patchArticleById = (req, res, next) => {
 	updateArticleById(article_id, inc_votes)
 		.then(article => {
 			res.status(200).send({ article });
+		})
+		.catch(err => {
+			next(err);
+		});
+};
+
+exports.postArticle = (req, res, next) => {
+	const { body } = req;
+	insertArticle(body)
+		.then(article => {
+			res.status(201).send({ article });
+		})
+		.catch(err => {
+			next(err);
+		});
+};
+
+exports.deleteArticleById = (req, res, next) => {
+	const { article_id } = req.params;
+	destroyArticle(article_id)
+		.then(() => {
+			res.sendStatus(204);
 		})
 		.catch(err => {
 			next(err);
