@@ -1,331 +1,189 @@
-# Northcoders News API
+# doug-news
+>_A node.js backend server for a news app using psql_
+_Built @ Northcoders!_
+----
 
-**You can clone this repository but do not fork it**
+### Built with:
+- Node.js
+- Express
+- Knex & node-pg
 
-## Background
-
-We will be building the API to use in the Northcoders News Sprint during the Front End block of the course.
-
-Your database will be PSQL, and you will interact with it using [Knex](https://knexjs.org).
-
-## Step 1 - Setting up your own repository
-
-Clone this repo:
-
-```bash
-git clone https://github.com/northcoders/be-nc-news
-
-cd be-nc-news
-```
-
-On GitHub create your own **public** repository for your project. **Make sure NOT to initialise it with a README or .gitignore.**
-
-Next, you should hook your local version up to the newly created GitHub repo. Use the following terminal commands, making sure to check the git remotes with each step (`git remote -v`):
-
-```bash
-git remote remove origin
-
-# This will prevent you from pushing to the original Northcoders' repo.
-```
-
-```bash
-git remote add origin <YOUR-GITHUB-URL>
-
-# This will add your GitHub location to your local git repository.
-# You can confirm this by checking the new git remote.
-```
-
-## Step 2 - Setting up your project
-
-In this repo we have provided you with the knexfile. Make sure to add it to the `.gitignore` once you start pushing to your own repository. If you are on linux insert your postgres username and password into the knexfile.
-
-You have also been provided with a `db` folder with some data, a [setup.sql](./db/setup.sql) file, a `seeds` folder and a `utils` folder. You should also take a minute to familiarise yourself with the npm scripts you have been provided.
-
-Your second task is to make accessing both sets of data around your project easier. You should make 3 `index.js` files: one in `db/data`, and one in each of your data folders (test & development).
-
-The job of `index.js` in each the data folders is to export out all the data from that folder, currently stored in separate files. This is so that, when you need access to the data elsewhere, you can write one convenient require statement - to the index file, rather than having to require each file individually. Make sure the index file exports an object with values of the data from that folder with the keys:
-
-- `topicData`
-- `articleData`
-- `userData`
-- `commentData`
-
-The job of the `db/data/index.js` file will be to export out of the db folder _only the data relevant to the current environment_. Specifically this file should allow your seed file to access only a specific set of data depending on the environment it's in: test, development or production. To do this is will have to require in all the data and should make use of `process.env` in your `index.js` file to achieve only exporting the right data out.
-
-**HINT: make sure the keys you export match up with the keys required into the seed file**
-
-## Step 3 - Migrations and Seeding
-
-Your seed file should now be set up to require in either test or dev data depending on the environment.
-
-You will need to create your migrations and complete the provided seed function to insert the appropriate data into your database.
-
-### Migrations
-
-This is where you will set up the schema for each table in your database.
-
-You should have separate tables for `topics`, `articles`, `users` and `comments`. You will need to think carefully about the order in which you create your migrations.
-
-Each topic should have:
-
-- `slug` field which is a unique string that acts as the table's primary key
-- `description` field which is a string giving a brief description of a given topic
-
-Each user should have:
-
-- `username` which is the primary key & unique
-- `avatar_url`
-- `name`
-
-Each article should have:
-
-- `article_id` which is the primary key
-- `title`
-- `body`
-- `votes` defaults to 0
-- `topic` field which references the slug in the topics table
-- `author` field that references a user's primary key (username)
-- `created_at` defaults to the current timestamp
-
-Each comment should have:
-
-- `comment_id` which is the primary key
-- `author` field that references a user's primary key (username)
-- `article_id` field that references an article's primary key
-- `votes` defaults to 0
-- `created_at` defaults to the current timestamp
-- `body`
-
-- **NOTE:** psql expects `Timestamp` types to be in a specific date format - **not a unix timestamp** as they are in our data! However, you can easily **re-format a unix timestamp into something compatible with our database using JS - you will be doing this in your utility function**... [JavaScript Date object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date)
-
-### Seeding
-
-You need to complete the provided seed function to insert the appropriate data into your database.
-
-Utilising your data manipulation skills, you will also need to complete the utility functions provided - `formatDate`, `makeRefObj`, and `formatComments` for the seed function to work. Instructions on these utility functions are in the [utils README](./db/utils/README.md).
-
-**Some advice: don't write all the utility functions in one go, write them when you need them in your seed**
+### TDD Tested using:
+- Mocha
+- Chai
+- Supertest
 
 ---
+# How to use
+#### Clone this repository and enter directory
+```bash
+git clone git@github.com:douglashellowell/nc-news.git && cd ./nc-news
+```
+#### Install the node.js dependencies
 
-## Step 4 - Building Endpoints
-
-- Use proper project configuration from the offset, being sure to treat development and test environments differently.
-- Test each route **as you go**, checking both successful requests **and the variety of errors you could expect to encounter** [See the error-handling file here for ideas of errors that will need to be considered](error-handling.md).
-- After taking the happy path when testing a route, think about how a client could make it go wrong. Add a test for that situation, then error handling to deal with it gracefully.
-- **HINT**: You will need to take advantage of knex migrations in order to efficiently test your application.
-
----
-
-### Vital Routes
-
-Your server _must_ have the following endpoints:
-
-```http
-GET /api/topics
-
-GET /api/users/:username
-
-GET /api/articles/:article_id
-PATCH /api/articles/:article_id
-
-POST /api/articles/:article_id/comments
-GET /api/articles/:article_id/comments
-
-GET /api/articles
-
-PATCH /api/comments/:comment_id
-DELETE /api/comments/:comment_id
-
-GET /api
+**-either-** just the server:
+```bash
+npm install --only=prod
+```
+**-or-**  everything - including testing tools:
+```bash
+npm install
+```
+#### Create and database
+```bash
+npm run setup-dbs && npm run migrate:latest && npm run seed
 ```
 
+#### Run server
+```bash
+npm start
+```
+> The console should print out...
+> ```
+> app is listening on port 9090 
+> ```
+> The server is now accepting requests on localhost:9090/
+> Try making requests in your browser: 
+> http://localhost:9090/api
+> http://localhost:9090/api/topics
+> http://localhost:9090/api/articles
+
 ---
+## Functionality
 
-### Route Requirements
+### `GET: /api` 
+> serves up a json representation of all the available endpoints of the api
 
-_**All of your endpoints should send the below responses in an object, with a key name of what it is that being sent. E.g.**_
+### `GET: /api/topics`
+> serves an array of topics in database
 
-```json
+example response: 
+```js
 {
-  "topics": [
+  topics: [
+    { slug: 'UK', description: 'National and Local News'},
+    { slug: 'Tech', description: 'Latest Software, Hardware and Tech Industry News' },
+    { slug: 'Gaming', description: 'All things gaming' }
+  ]
+}
+```
+### `GET: /api/articles`
+> serves an array of articles in database
+
+example response:
+```js
+{
+  "articles": [
     {
-      "description": "Code is love, code is life",
-      "slug": "coding"
+      "article_id": 1,
+      "title": "Seafood substitutions are increasing",
+      "topic": "UK",
+      "author": "weegembump",
+      "body": "Text from the article..",
+      "created_at": 1527695953341,
+      "comment_count": "13",
+      "votes": 58
     },
     {
-      "description": "FOOTIE!",
-      "slug": "football"
-    },
-    {
-      "description": "Hey good looking, what you got cooking?",
-      "slug": "cooking"
+      "article_id": 2,
+      "title": "Open to any Super Smash Bros Challenges...",
+      "topic": "Gaming",
+      "author": "doug123",
+      "body": "Text from the article..",
+      "created_at": 1527695953341,
+      "comment_count": "17",
+      "votes": 72
     }
   ]
 }
 ```
+### `GET: /api/articles/:article_id`
+> serves an object with article data from specified article_id
 
----
-
-```http
-GET /api/topics
+```js
+{ 
+  "article":
+    {
+      "article_id": 1,
+      "title": "Electron and Node.js on the desktop",
+      "topic": "Tech",
+      "author": "doug123",
+      "body": "Text from the article..",
+      "created_at": 1527695953341,
+      "comment_count": "20",
+      "votes": 97
+    }
+}
 ```
 
-#### Responds with
+### `PATCH: /api/articles/:article_id`
+> updates 'votes' of article and returns updated article to user
 
-- an array of topic objects, each of which should have the following properties:
-  - `slug`
-  - `description`
-
----
-
-```http
-GET /api/users/:username
+example patch data:
+```js
+{ inc_votes: 1 }
 ```
-
-#### Responds with
-
-- a user object which should have the following properties:
-  - `username`
-  - `avatar_url`
-  - `name`
-
----
-
-```http
-GET /api/articles/:article_id
+```js
+{ inc_votes: -1 }
 ```
+### `GET: /api/articles/:article_id/comments`
+> serves an array of comments for specified article
 
-#### Responds with
-
-- an article object, which should have the following properties:
-
-  - `author` which is the `username` from the users table
-  - `title`
-  - `article_id`
-  - `body`
-  - `topic`
-  - `created_at`
-  - `votes`
-  - `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
-
----
-
-```http
-PATCH /api/articles/:article_id
+example response:
+```js
+{
+"comments": [
+  {
+    "comment_id": 14,
+    "author": "icellusedkars",
+    "article_id": 5,
+    "votes": 16,
+    "created_at": "2004-11-25T12:36:03.389Z",
+    "body": "Really fascinating! I've got to use this in the future!"
+  },
+  {
+    "comment_id": 15,
+    "author": "butter_bridge",
+    "article_id": 5,
+    "votes": 1,
+    "created_at": "2003-11-26T12:36:03.389Z",
+    "body": "This is so funny i'm going to get it tattoo'd"
+  }
+]
+}
 ```
-
-#### Request body accepts
-
-- an object in the form `{ inc_votes: newVote }`
-
-  - `newVote` will indicate how much the `votes` property in the database should be updated by
-
-  e.g.
-
-  `{ inc_votes : 1 }` would increment the current article's vote property by 1
-
-  `{ inc_votes : -100 }` would decrement the current article's vote property by 100
-
-#### Responds with
-
-- the updated article
-
----
-
-```http
-POST /api/articles/:article_id/comments
+### `POST: /api/articles/:article_id/comments`
+> posts a comments associated with specified endpoint and responds with uploaded comment (user must exist)
+example post:
+```js
+{
+  "username": "broccoli55",
+  "body": "This article is interesting!"
+}
 ```
-
-#### Request body accepts
-
-- an object with the following properties:
-  - `username`
-  - `body`
-
-#### Responds with
-
-- the posted comment
-
----
-
-```http
-GET /api/articles/:article_id/comments
+example response:
+```js
+{
+  "comment": {
+    "comment_id": 19,
+    "author": "broccoli55",
+    "article_id": 2,
+    "votes": 0,
+    "created_at": "2019-12-12T11:19:19.306Z",
+    "body": "This article is interesting!"
+  }
+}
 ```
+### `PATCH: api/comments/:comment_id`
+> Updates 'votes' on specified comment and returns updated comment to user
 
-#### Responds with
-
-- an array of comments for the given `article_id` of which each comment should have the following properties:
-  - `comment_id`
-  - `votes`
-  - `created_at`
-  - `author` which is the `username` from the users table
-  - `body`
-
-#### Accepts queries
-
-- `sort_by`, which sorts the comments by any valid column (defaults to created_at)
-- `order`, which can be set to `asc` or `desc` for ascending or descending (defaults to descending)
-
----
-
-```http
-GET /api/articles
+example patch data:
+```js
+{ inc_votes: 1 }
 ```
-
-#### Responds with
-
-- an `articles` array of article objects, each of which should have the following properties:
-  - `author` which is the `username` from the users table
-  - `title`
-  - `article_id`
-  - `topic`
-  - `created_at`
-  - `votes`
-  - `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
-
-#### Should accept queries
-
-- `sort_by`, which sorts the articles by any valid column (defaults to date)
-- `order`, which can be set to `asc` or `desc` for ascending or descending (defaults to descending)
-- `author`, which filters the articles by the username value specified in the query
-- `topic`, which filters the articles by the topic value specified in the query
-
----
-
-```http
-PATCH /api/comments/:comment_id
+```js
+{ inc_votes: -1 }
 ```
-
-#### Request body accepts
-
-- an object in the form `{ inc_votes: newVote }`
-
-  - `newVote` will indicate how much the `votes` property in the database should be updated by
-
-  e.g.
-
-  `{ inc_votes : 1 }` would increment the current comments's vote property by 1
-
-  `{ inc_votes : -1 }` would decrement the current comments's vote property by 1
-
-#### Responds with
-
-- the updated comment
-
----
-
-```http
-DELETE /api/comments/:comment_id
-```
-
-#### Should
-
-- delete the given comment by `comment_id`
-
-#### Responds with
-
-- status 204 and no content
 
 ---
 
