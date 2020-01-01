@@ -181,7 +181,7 @@ describe('==== app ====', () => {
 					});
 			});
 		});
-		describe.only('GET: 200 - /', () => {
+		describe('GET: 200 - /', () => {
 			it('returns array of all users', () => {
 				return request(app)
 					.get('/api/users')
