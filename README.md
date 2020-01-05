@@ -34,7 +34,7 @@ sudo apt-get update && sudo apt-get upgrade && sudo apt-get install git && curl 
 psql
 ```
 
-Then, instead of '_username_' type your linux username and instead of '_mysecretword123_' choose your own password and be sure to wrap it in quotation marks.
+Then enter the following, instead of '_username_' type your linux username and instead of '_mysecretword123_' choose your own password and be sure to wrap it in quotation marks.
 
 Use a simple password like 'password'. DONT USE YOUR LOGIN PASSWORD!
 
@@ -109,6 +109,14 @@ npm install
 ```bash
 npm run setup-dbs && npm run migrate:latest && npm run seed
 ```
+
+#### Test server (if testing tools installed)
+
+```bash
+npm test
+```
+
+![alt text](./tests_example.png)
 
 #### Run server
 

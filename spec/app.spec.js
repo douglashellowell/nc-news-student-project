@@ -5,7 +5,6 @@ const { expect } = chai;
 const chaiSorted = require('chai-sorted');
 chai.use(chaiSorted);
 
-const knex = require('knex');
 const connection = require('../db/connection'); // < knex connection client
 const request = require('supertest');
 const app = require('../app.js');
