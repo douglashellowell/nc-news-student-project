@@ -25,7 +25,7 @@
 #### Install dependancies (`Git`, `Node.js`, `PSQL`):
 
 ```bash
-sudo apt-get update && sudo apt-get upgrade && sudo apt-get install git && curl postgresql postgresql-contrib && touch ~/.bash_profile && curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash && source ~/.nvm/nvm.sh && nvm install node && nvm use node && sudo -u postgres createuser --superuser $USER && sudo -u postgres createdb $USER
+sudo apt-get update && sudo apt-get upgrade && sudo apt-get install git && curl postgresql postgresql-contrib && touch ~/.bash_profile && curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash && source ~/.nvm/nvm.sh && nvm install node && nvm use node && sudo -u postgres createuser --superuser $USER
 ```
 
 #### Setup `psql`
@@ -47,7 +47,7 @@ you can exit with `\q`
 #### Clone this repository and enter directory
 
 ```bash
-git clone git@github.com:douglashellowell/nc-news.git && cd ./nc-news
+git clone https://github.com/douglashellowell/nc-news.git
 ```
 
 #### Create a database config file - '`knexfile.js`'
